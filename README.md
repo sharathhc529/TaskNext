@@ -1,88 +1,73 @@
-# SBOMGuard: Software Supply Chain Security & SBOM Delivery Platform
+# 📱 Task & Reminder Android App
 
-An end-to-end hands-on platform demonstrating modern software supply chain security, SBOM (Software Bill of Materials) scanning, graph-based dependency modeling with **Dgraph**, and policy-as-code gatekeeping with **Open Policy Agent (OPA)**.
+A modern Android application built with **Kotlin**, **Jetpack Compose (Material 3)**, and **Room Database**. It runs reliably in the background and brings up full-screen alarms with custom audio and vibration to remind you of your upcoming tasks.
 
 ---
 
-## 🌟 Key Features
+## 🌟 Features
 
-- 📦 **Multi-Format SBOM Engine (Go 1.24)**:
-  - Supports **CycloneDX 1.5 JSON**, **SPDX 2.3 JSON**, and direct manifest scanning (`package.json`, `go.mod`, `requirements.txt`).
-- 🛡️ **Vulnerability Intelligence (OSV.dev & CVE Feeds)**:
-  - Real-time vulnerability lookup with CVSS ratings, severity classifications, and remediation versions.
-- 🕸️ **Graph-Based Dependency Modeling (Dgraph)**:
-  - Models software components as graph relationships (`Artifact` $\to$ `Package` $\to$ `License` & `Vulnerability`) for blast radius analysis.
-  - Zero-dependency embedded in-memory graph driver + live Dgraph cluster support via `dgo`.
-- ⚖️ **Policy-as-Code Gatekeeper (OPA / Rego)**:
-  - Embedded Open Policy Agent evaluating license compliance (e.g. GPL/copyleft restrictions) and CVE severity thresholds.
-  - Interactive live Rego editor and policy sandbox.
-- 🚀 **Interactive Developer Dashboard (React 18 + Tailwind + Vis-Network)**:
-  - Visual dependency graph canvas with node inspector.
-  - Full SBOM inventory explorer with search and JSON export.
-  - CI/CD delivery gate simulator with live terminal logs.
+1. **⚡ Next Task Up Hero Banner**:
+   - Displays your imminent upcoming task with a **real-time live countdown** (hours, minutes, seconds).
+   - Instant "Mark as Done" one-tap completion.
+
+2. **🔔 Pre-Reminder Trigger Choices**:
+   - Choose when the alarm should bring the app to the foreground:
+     - ⏱ **Exact Time** (0 minutes)
+     - ⏱ **5 minutes before**
+     - ⏱ **30 minutes before**
+     - ⏱ **1 hour before**
+     - ⏱ **3 hours before**
+     - ⏱ **1 day before**
+   - Automatically computes and displays the exact popup trigger timestamp.
+
+3. **🚨 Full-Screen Foreground Alarm Popup**:
+   - Wakes up the screen even when locked (`USE_FULL_SCREEN_INTENT`, `setShowWhenLocked(true)`, `setTurnScreenOn(true)`).
+   - Loops alarm audio and repeating vibration until interacted with.
+   - Quick actions:
+     - 🟢 **Mark as Done**
+     - 🟡 **Snooze (5 min)**
+     - 🔴 **Dismiss**
+
+4. **🔋 Background Reliability & Reboot Recovery**:
+   - Uses `AlarmManager.setExactAndAllowWhileIdle()` for battery-optimized exact timing.
+   - Listens to `BOOT_COMPLETED` to automatically reschedule all pending alarms after device reboot.
+
+5. **🛡️ Comprehensive Permission Management**:
+   - In-app status cards and direct links to Android Settings for:
+     - **Post Notifications** (`POST_NOTIFICATIONS` - Android 13+)
+     - **Schedule Exact Alarms** (`SCHEDULE_EXACT_ALARM` - Android 12+)
+     - **Battery Optimization Exemption** (`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`)
+     - **Display Over Other Apps** (`SYSTEM_ALERT_WINDOW`)
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-secureSoftware/
-├── backend/                  # Go 1.24 API Server & Scanning Engine
-│   ├── main.go               # Server entrypoint
-│   ├── pkg/
-│   │   ├── models/           # Domain data types
-│   │   ├── sbom/             # CycloneDX, SPDX & manifest parsers
-│   │   ├── vuln/             # OSV.dev client & vulnerability enrichment
-│   │   ├── graph/            # Dgraph & in-memory graph engines
-│   │   ├── policy/           # Embedded OPA Rego policy evaluator
-│   │   └── api/              # HTTP REST controllers
-│   ├── samples/              # Preloaded vulnerable & clean project fixtures
-│   └── tests/                # Automated Go test suite
-├── frontend/                 # React + Vite Dashboard
-│   ├── src/
-│   │   ├── components/       # Dashboard, GraphViewer, SbomTable, PolicyStudio, CicdPipeline
-│   │   └── services/         # API client
-│   └── package.json
-├── docker-compose.yml        # Dgraph cluster (Zero + Alpha + Ratel UI)
-├── GUIDE.md                  # Hands-on developer tutorial & exercises
+├── android/                        # 📱 Native Android Project (Kotlin + Jetpack Compose)
+│   ├── app/
+│   │   ├── src/main/
+│   │   │   ├── AndroidManifest.xml # Permissions, fullScreenIntent, receivers
+│   │   │   ├── java/com/example/taskreminder/
+│   │   │   │   ├── data/           # Room Database, DAO, Entity, Repository
+│   │   │   │   ├── receiver/       # AlarmReceiver, BootReceiver
+│   │   │   │   ├── util/           # AlarmScheduler, ReminderSoundPlayer
+│   │   │   │   └── ui/             # HomeScreen, AddEditTaskDialog, ReminderPopupActivity
+│   │   │   └── res/                # Themes, strings, drawables, launcher icons
+│   │   └── build.gradle.kts
+│   ├── gradle/libs.versions.toml   # Dependency Version Catalog
+│   ├── build.gradle.kts
+│   └── settings.gradle.kts
+├── backend/                        # Optional Backend Services
+├── frontend/                       # Optional Web Dashboard
 └── README.md
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🚀 How to Run in Android Studio
 
-### 1. Prerequisites
-- **Go** (1.24+)
-- **Node.js** (v18+) & **npm**
-
-### 2. Run the Backend API
-```powershell
-cd backend
-go run main.go
-```
-API server runs on `http://localhost:8080`.
-
-### 3. Run the Frontend Dashboard
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-Dashboard opens at `http://localhost:5173`.
-
-### 4. Run Backend Unit Tests
-```powershell
-cd backend
-go test -v ./...
-```
-
----
-
-## 📖 Hands-On Tutorial
-
-Read [`GUIDE.md`](./GUIDE.md) for a comprehensive step-by-step developer walkthrough on:
-- SBOM specifications (CycloneDX vs SPDX)
-- Graph dependency modeling and transitive blast radius in Dgraph
-- Policy-as-Code engineering with OPA & Rego
-- Hands-on exercises for CI/CD pipeline gatekeeping
+1. Open **Android Studio**.
+2. Click **Open** and select the **`android/`** folder.
+3. Allow Gradle to sync.
+4. Select your connected device or emulator and click **Run (▶)**.
