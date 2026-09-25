@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Dgraph Zero manages server topology and timestamps
+  dgraph-zero:
+    image: dgraph/dgraph:latest
+    container_name: dgraph-zero
+    volumes:
+      - dgraph-zero-data:/dgraph
+    ports:
+      - "5080:5080"
+      - "6080:6080"
+    restart: on-failure
+    command: dgraph zero --my=dgraph-zero:5080
+
+  # Dgraph Alpha stores the software dependency graph and executes queries
+  dgraph-alpha:
+    image: dgraph/dgraph:latest
+    container_name: dgraph-alpha
+    volumes:
+      - dgraph-alpha-data:/dgraph
+    ports:
+      - "8080:8080"
+      - "9080:9080"
+    restart: on-failure
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080
+    depends_on:
+      - dgraph-zero
+
+  # Dgraph Ratel web UI for querying and visualizing graph data (http://localhost:8000)
+  dgraph-ratel:
+    image: dgraph/ratel:latest
+    container_name: dgraph-ratel
+    ports:
+      - "8000:8000"
+    depends_on:
+      - dgraph-alpha
+
+volumes:
+  dgraph-zero-data:
+  dgraph-alpha-data:

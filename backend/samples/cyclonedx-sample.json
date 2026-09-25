@@ -1,0 +1,82 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-21T10:00:00Z",
+    "component": {
+      "type": "application",
+      "name": "enterprise-cloud-portal",
+      "version": "3.1.0",
+      "purl": "pkg:generic/enterprise-cloud-portal@3.1.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "log4j-core",
+      "version": "2.14.1",
+      "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1",
+      "description": "Apache Log4j Core implementation",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "name": "Apache License 2.0"
+          }
+        }
+      ],
+      "vulnerabilities": [
+        {
+          "id": "CVE-2021-44228",
+          "description": "Log4Shell remote code execution in Apache Log4j2 JNDI parser",
+          "ratings": [
+            {
+              "severity": "CRITICAL",
+              "score": 10.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spring-core",
+      "version": "5.3.18",
+      "purl": "pkg:maven/org.springframework/spring-core@5.3.18",
+      "description": "Spring Framework Core",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gpl-database-connector",
+      "version": "1.4.0",
+      "purl": "pkg:maven/com.database/gpl-connector@1.4.0",
+      "description": "Legacy MySQL GPL connector",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-3.0-only"
+          }
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/enterprise-cloud-portal@3.1.0",
+      "dependsOn": [
+        "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1",
+        "pkg:maven/org.springframework/spring-core@5.3.18",
+        "pkg:maven/com.database/gpl-connector@1.4.0"
+      ]
+    }
+  ]
+}

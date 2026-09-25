@@ -1,0 +1,14 @@
+# Node & Frontend
+**/node_modules/
+**/dist/
+.env
+
+# Android Build outputs & caches
+**/.gradle/
+**/build/
+**/*.apk
+**/*.aab
+**/.idea/
+**/*.iml
+**/local.properties
+.DS_Store

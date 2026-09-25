@@ -1,0 +1,17 @@
+{
+  "name": "vulnerable-storefront-api",
+  "version": "1.2.0",
+  "description": "Sample e-commerce backend with supply chain vulnerabilities for SBOM & OPA testing",
+  "main": "server.js",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "4.16.4",
+    "lodash": "4.17.15",
+    "jsonwebtoken": "8.5.1",
+    "axios": "0.21.1",
+    "gpl-library": "1.0.0"
+  },
+  "devDependencies": {
+    "moment": "2.29.1"
+  }
+}

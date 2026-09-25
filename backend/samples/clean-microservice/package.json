@@ -1,0 +1,13 @@
+{
+  "name": "secure-payment-gateway",
+  "version": "2.4.0",
+  "description": "Secure hardened microservice with patched dependencies and MIT/Apache licenses",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.19.2",
+    "lodash": "4.17.21",
+    "jsonwebtoken": "9.0.2",
+    "axios": "1.7.4"
+  }
+}
