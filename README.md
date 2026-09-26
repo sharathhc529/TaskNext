@@ -2,7 +2,7 @@
 
 Kotlin · Jetpack Compose (Material 3) · Room — full-screen alarms that reliably remind you of upcoming tasks.
 
-**Latest:** [v1.1.0](https://github.com/sharathhc529/TaskReminderApp/releases/latest) · Android 8.0+
+**Latest:** [v1.2.0](https://github.com/sharathhc529/TaskReminderApp/releases/latest) · Android 8.0+ · [Contact](mailto:sharathhc529@gmail.com)
 
 ---
 
@@ -15,8 +15,15 @@ Kotlin · Jetpack Compose (Material 3) · Room — full-screen alarms that relia
 - **Per-task alarm sound** — phone ringtones or any audio file, with in-app preview.
 - **Full-screen alarm popup** — wakes the screen over the lock screen; Done, Snooze 5m, Dismiss. No notification banner covering it when the app is open.
 - **Reliable** — exact alarms, snooze survives reboots, alarms restored after restart.
+- **About** — version info, contact email and update check from the ⓘ button.
 
-## 🆕 What's new in 1.1.0
+## 🆕 What's new
+
+**1.2.0** — About screen (ⓘ in the top bar): app version, contact email, check for updates
+
+**1.1.1** — Security hardening; signed, optimized release build
+
+**1.1.0**
 
 - Snooze now updates the task (countdown, time and after-reboot rescheduling)
 - Next Reminder picks the alarm that rings first (reminder offsets and snoozes included)
@@ -40,3 +47,7 @@ android/app/src/main/java/com/example/taskreminder/
 ├── util/      AlarmScheduler, ReminderSoundPlayer, formatting
 └── ui/        HomeScreen, AddEditTaskDialog, ReminderPopupActivity
 ```
+
+## ✉️ Contact
+
+Questions, bugs or ideas: **[sharathhc529@gmail.com](mailto:sharathhc529@gmail.com)**

@@ -40,6 +40,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
@@ -114,6 +115,7 @@ fun HomeScreen(
     val permissionState by viewModel.permissionState.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<TaskEntity?>(null) }
     var selectedScreen by rememberSaveable { mutableIntStateOf(0) } // 0 = Today, 1 = Tasks
     var selectedTab by rememberSaveable { mutableIntStateOf(0) } // 0 = Upcoming, 1 = Completed, 2 = All
@@ -171,6 +173,11 @@ fun HomeScreen(
                             text = "Task & Reminder",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showAbout = true }) {
+                        Icon(Icons.Outlined.Info, contentDescription = "About")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -311,6 +318,10 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    if (showAbout) {
+        AboutDialog(onDismiss = { showAbout = false })
     }
 
     if (showAddDialog) {

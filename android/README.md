@@ -11,6 +11,7 @@ Kotlin · Jetpack Compose (Material 3) · Room · AlarmManager
 - **Alarm sound per task** — phone sounds or audio files, preview button, falls back to default if unavailable
 - **Alarm popup** — over lock screen; Done / Snooze 5m / Dismiss (Dismiss silences, task stays open)
 - **Reliability** — exact alarms, persisted snooze, reboot rescheduling, permission status cards
+- **About** — ⓘ in the top bar: version, contact email, check for updates
 
 ## 🏗️ Tech
 
@@ -29,3 +30,9 @@ Requires Android Studio (Ladybug+), **JDK 17–21** for Gradle 8.10, Android SDK
 ./gradlew assembleDebug
 # app/build/outputs/apk/debug/app-debug.apk
 ```
+
+Release builds are signed from a local, gitignored `keystore.properties`; without it `assembleRelease` outputs an unsigned APK.
+
+## ✉️ Contact
+
+[sharathhc529@gmail.com](mailto:sharathhc529@gmail.com)
