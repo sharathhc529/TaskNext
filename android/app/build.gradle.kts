@@ -14,6 +14,13 @@ val keystoreProperties = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
+// Feedback relay URL + shared token also live in a local, gitignored secrets.properties;
+// without it the forms report that feedback isn't set up
+val secretProperties = Properties().apply {
+    val file = rootProject.file("secrets.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
 android {
     namespace = "com.example.taskreminder"
     compileSdk = 35
@@ -22,8 +29,11 @@ android {
         applicationId = "com.example.taskreminder"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "1.2.1"
+
+        buildConfigField("String", "FEEDBACK_ENDPOINT", "\"${secretProperties.getProperty("feedbackEndpoint", "")}\"")
+        buildConfigField("String", "FEEDBACK_TOKEN", "\"${secretProperties.getProperty("feedbackToken", "")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,6 +72,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {

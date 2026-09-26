@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,46 +32,50 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
+import com.example.taskreminder.R
 import com.example.taskreminder.ui.theme.PrimaryBlue
+import kotlinx.coroutines.launch
 
 const val CONTACT_EMAIL = "sharathhc529@gmail.com"
-private const val LATEST_RELEASE_URL = "https://github.com/sharathhc529/TaskReminderApp/releases/latest"
 
 @Composable
-fun AboutDialog(onDismiss: () -> Unit) {
+fun AboutDialog(onDismiss: () -> Unit, onOpenFeedback: () -> Unit) {
     val context = LocalContext.current
+    val appName = stringResource(R.string.app_name)
     // Read from the installed package so it always matches the build (versionName + versionCode)
-    val version = remember {
-        runCatching {
-            val info = context.packageManager.getPackageInfo(context.packageName, 0)
-            "Version ${info.versionName} (${PackageInfoCompat.getLongVersionCode(info)})"
-        }.getOrDefault("Version unknown")
+    val packageInfo = remember {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
     }
+    val version = packageInfo
+        ?.let { "Version ${it.versionName} (${PackageInfoCompat.getLongVersionCode(it)})" }
+        ?: "Version unknown"
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(PrimaryBlue, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Alarm, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
-            }
-        },
+        icon = { AppIconBadge(size = 64.dp) },
         title = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("Task & Reminder", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Text(appName, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                 Text(
                     text = version,
                     style = MaterialTheme.typography.bodyMedium,
@@ -81,7 +86,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "Full-screen alarms that make sure you never miss a task.",
+                    text = stringResource(R.string.app_tagline),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -89,13 +94,13 @@ fun AboutDialog(onDismiss: () -> Unit) {
                     icon = Icons.Default.Email,
                     label = "Contact",
                     value = CONTACT_EMAIL,
-                    onClick = { sendEmail(context, version) }
+                    onClick = { sendEmail(context, appName, version) }
                 )
                 AboutRow(
-                    icon = Icons.Default.SystemUpdate,
-                    label = "Updates",
-                    value = "Check for the latest version",
-                    onClick = { openUrl(context, LATEST_RELEASE_URL) }
+                    icon = Icons.Default.RateReview,
+                    label = "Suggestions & feedback",
+                    value = "Tell us what to improve",
+                    onClick = onOpenFeedback
                 )
             }
         },
@@ -103,10 +108,29 @@ fun AboutDialog(onDismiss: () -> Unit) {
             TextButton(onClick = onDismiss) { Text("Close") }
         }
     )
+
+}
+
+/** The launcher icon's own artwork, for use inside the app (header, About). */
+@Composable
+fun AppIconBadge(size: Dp) {
+    Box(modifier = Modifier.size(size).clip(CircleShape)) {
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_foreground),
+            contentDescription = null,
+            modifier = Modifier.matchParentSize().scale(1.35f)
+        )
+    }
 }
 
 @Composable
-private fun AboutRow(icon: ImageVector, label: String, value: String, onClick: () -> Unit) {
+private fun AboutRow(icon: ImageVector, label: String, value: String, onClick: () -> Unit, highlight: Boolean = false) {
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -121,31 +145,35 @@ private fun AboutRow(icon: ImageVector, label: String, value: String, onClick: (
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    color = if (highlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }
 }
 
-private fun sendEmail(context: Context, version: String) {
+private fun sendEmail(context: Context, appName: String, version: String) {
+    composeEmail(context, subject = "$appName feedback ($version)")
+}
+
+/** Opens the user's email app addressed to the developer. Returns false (and copies the address) if there is none. */
+internal fun composeEmail(context: Context, subject: String, body: String? = null): Boolean {
     val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$CONTACT_EMAIL")).apply {
         putExtra(Intent.EXTRA_EMAIL, arrayOf(CONTACT_EMAIL))
-        putExtra(Intent.EXTRA_SUBJECT, "Task & Reminder feedback ($version)")
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        body?.let { putExtra(Intent.EXTRA_TEXT, it) }
     }
-    try {
+    return try {
         context.startActivity(intent)
+        true
     } catch (e: ActivityNotFoundException) {
         // No email app installed: copy the address instead
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("Email", CONTACT_EMAIL))
         Toast.makeText(context, "No email app found. Address copied.", Toast.LENGTH_SHORT).show()
-    }
-}
-
-private fun openUrl(context: Context, url: String) {
-    try {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-    } catch (e: ActivityNotFoundException) {
-        Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
+        false
     }
 }

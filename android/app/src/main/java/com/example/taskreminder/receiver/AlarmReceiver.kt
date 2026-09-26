@@ -212,7 +212,7 @@ fun showAlarmNotification(
     }
 
     val builder = NotificationCompat.Builder(context, AlarmReceiver.CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_stat_alarm)
         .setContentTitle(title)
         .setContentText(reminderText)
         .setPriority(NotificationCompat.PRIORITY_MAX)

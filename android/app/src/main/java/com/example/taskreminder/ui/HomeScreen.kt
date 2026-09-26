@@ -86,11 +86,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskreminder.R
 import com.example.taskreminder.data.TaskEntity
 import com.example.taskreminder.ui.theme.AccentAmber
 import com.example.taskreminder.ui.theme.DangerRed
@@ -116,6 +118,7 @@ fun HomeScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showAbout by remember { mutableStateOf(false) }
+    var showFeedback by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<TaskEntity?>(null) }
     var selectedScreen by rememberSaveable { mutableIntStateOf(0) } // 0 = Today, 1 = Tasks
     var selectedTab by rememberSaveable { mutableIntStateOf(0) } // 0 = Upcoming, 1 = Completed, 2 = All
@@ -155,22 +158,10 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(PrimaryBlue, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Alarm,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        AppIconBadge(size = 36.dp)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Task & Reminder",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -321,7 +312,12 @@ fun HomeScreen(
     }
 
     if (showAbout) {
-        AboutDialog(onDismiss = { showAbout = false })
+        AboutDialog(onDismiss = { showAbout = false }, onOpenFeedback = { showFeedback = true })
+    }
+
+    if (showFeedback) {
+        // Once sent, close About behind the thank-you so closing it lands straight back on the app
+        FeedbackDialog(onDismiss = { showFeedback = false }, onSent = { showAbout = false })
     }
 
     if (showAddDialog) {

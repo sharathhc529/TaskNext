@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Foreground and Exact Alarm Permissions -->
+    <!-- Only used to send the Suggestions & feedback form (HTTPS, to the developer's relay) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Approximate (city-level) location, only when the user taps Detect on the feedback form -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
