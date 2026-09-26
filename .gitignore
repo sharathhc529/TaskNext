@@ -12,3 +12,8 @@
 **/*.iml
 **/local.properties
 .DS_Store
+
+# Signing keys & credentials (never commit)
+**/keystore.properties
+**/*.jks
+**/*.keystore

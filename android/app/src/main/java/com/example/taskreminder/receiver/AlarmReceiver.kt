@@ -41,7 +41,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val scheduledTime = intent.getLongExtra(AlarmScheduler.EXTRA_TASK_SCHEDULED_TIME, System.currentTimeMillis())
         val offsetMins = intent.getIntExtra(AlarmScheduler.EXTRA_TASK_OFFSET_MINS, 0)
 
-        Log.d(TAG, "onReceive: action=${intent.action}, taskId=$taskId, title=$taskTitle")
+        Log.d(TAG, "onReceive: action=${intent.action}, taskId=$taskId")
 
         when (intent.action) {
             ACTION_TASK_REMINDER -> {
