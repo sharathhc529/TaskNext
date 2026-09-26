@@ -1,4 +1,4 @@
-# 📱 Task & Reminder — Android
+# ⏰ TaskNext — Android
 
 Kotlin · Jetpack Compose (Material 3) · Room · AlarmManager
 
@@ -11,7 +11,7 @@ Kotlin · Jetpack Compose (Material 3) · Room · AlarmManager
 - **Alarm sound per task** — phone sounds or audio files, preview button, falls back to default if unavailable
 - **Alarm popup** — over lock screen; Done / Snooze 5m / Dismiss (Dismiss silences, task stays open)
 - **Reliability** — exact alarms, persisted snooze, reboot rescheduling, permission status cards
-- **About** — ⓘ in the top bar: version, contact email, check for updates
+- **About** — ⓘ in the top bar: version, contact email, suggestions & feedback form
 
 ## 🏗️ Tech
 

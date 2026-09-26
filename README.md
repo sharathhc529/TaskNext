@@ -1,8 +1,10 @@
-# 📱 Task & Reminder Android App
+# ⏰ TaskNext — Task Alarms
 
-Kotlin · Jetpack Compose (Material 3) · Room — full-screen alarms that reliably remind you of upcoming tasks.
+**Task alarms that make sure you never miss a thing.** Loud, full-screen reminders that stay until the task is done.
 
-**Latest:** [v1.2.0](https://github.com/sharathhc529/TaskReminderApp/releases/latest) · Android 8.0+ · [Contact](mailto:sharathhc529@gmail.com)
+<sub>Kotlin · Jetpack Compose (Material 3) · Room</sub>
+
+**Latest:** [v1.2.1](https://github.com/sharathhc529/TaskReminderApp/releases/latest) · Android 8.0+ · [Contact](mailto:sharathhc529@gmail.com)
 
 ---
 
@@ -15,9 +17,11 @@ Kotlin · Jetpack Compose (Material 3) · Room — full-screen alarms that relia
 - **Per-task alarm sound** — phone ringtones or any audio file, with in-app preview.
 - **Full-screen alarm popup** — wakes the screen over the lock screen; Done, Snooze 5m, Dismiss. No notification banner covering it when the app is open.
 - **Reliable** — exact alarms, snooze survives reboots, alarms restored after restart.
-- **About** — version info, contact email and update check from the ⓘ button.
+- **About** — version info, contact email, and a suggestions & feedback form (ⓘ button).
 
 ## 🆕 What's new
+
+**1.2.1** — New name **TaskNext** and a new progress-ring icon (fixed boxed launcher icon and blank notification icon) · suggestions & feedback form
 
 **1.2.0** — About screen (ⓘ in the top bar): app version, contact email, check for updates
 
@@ -51,3 +55,7 @@ android/app/src/main/java/com/example/taskreminder/
 ## ✉️ Contact
 
 Questions, bugs or ideas: **[sharathhc529@gmail.com](mailto:sharathhc529@gmail.com)**
+
+## 🔒 Privacy
+
+TaskNext keeps your tasks on your phone. It only goes online when you send **Suggestions & feedback**: the form emails the developer what you type (name, email, location, message) plus the app and Android version. Location detection is optional, approximate (city level), and only runs when you tap it.
