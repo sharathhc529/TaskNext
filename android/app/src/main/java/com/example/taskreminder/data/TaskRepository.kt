@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.Flow
 class TaskRepository(private val taskDao: TaskDao) {
 
     val allTasks: Flow<List<TaskEntity>> = taskDao.getAllTasks()
-    val nextUpcomingTask: Flow<TaskEntity?> = taskDao.getNextUpcomingTaskFlow()
 
     suspend fun insert(task: TaskEntity): Long = taskDao.insertTask(task)
 
@@ -19,9 +18,6 @@ class TaskRepository(private val taskDao: TaskDao) {
 
     suspend fun setTaskCompleted(taskId: Long, completed: Boolean) =
         taskDao.setTaskCompleted(taskId, completed)
-
-    suspend fun setTaskDismissed(taskId: Long) =
-        taskDao.setTaskDismissed(taskId)
 
     suspend fun getPendingTasksForReschedule(currentTime: Long): List<TaskEntity> =
         taskDao.getPendingTasksForReschedule(currentTime)

@@ -38,12 +38,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = emptyList()
     )
 
-    val nextUpcomingTask: StateFlow<TaskEntity?> = repository.nextUpcomingTask.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = null
-    )
-
     private val _permissionState = MutableStateFlow(PermissionState())
     val permissionState: StateFlow<PermissionState> = _permissionState.asStateFlow()
 
@@ -92,14 +86,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         title: String,
         description: String,
         scheduledTimestamp: Long,
-        reminderOffsetMinutes: Int
+        reminderOffsetMinutes: Int,
+        alarmSoundUri: String?
     ) {
         viewModelScope.launch {
             val task = TaskEntity(
                 title = title.trim(),
                 description = description.trim(),
                 scheduledTimestamp = scheduledTimestamp,
-                reminderOffsetMinutes = reminderOffsetMinutes
+                reminderOffsetMinutes = reminderOffsetMinutes,
+                alarmSoundUri = alarmSoundUri
             )
             val generatedId = repository.insert(task)
             val savedTask = task.copy(id = generatedId)

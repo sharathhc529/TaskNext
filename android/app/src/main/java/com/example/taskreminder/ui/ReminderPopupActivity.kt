@@ -2,6 +2,7 @@ package com.example.taskreminder.ui
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -43,6 +44,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -54,12 +59,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.example.taskreminder.data.TaskDatabase
+import com.example.taskreminder.receiver.cancelAlarmNotification
+import com.example.taskreminder.receiver.showAlarmNotification
 import com.example.taskreminder.ui.theme.DangerRed
 import com.example.taskreminder.ui.theme.PrimaryBlue
 import com.example.taskreminder.ui.theme.SuccessGreen
 import com.example.taskreminder.ui.theme.TaskReminderTheme
 import com.example.taskreminder.util.AlarmScheduler
 import com.example.taskreminder.util.ReminderSoundPlayer
+import com.example.taskreminder.util.formatReminderOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -68,21 +76,17 @@ import java.util.Locale
 
 class ReminderPopupActivity : ComponentActivity() {
 
-    private var taskId: Long = -1L
-    private var taskTitle: String = "Scheduled Task"
-    private var taskDesc: String = ""
-    private var scheduledTime: Long = 0L
-    private var offsetMins: Int = 0
+    // Compose state so a newer alarm delivered via onNewIntent (singleTask) replaces what's shown
+    private var taskId by mutableLongStateOf(-1L)
+    private var taskTitle by mutableStateOf("Scheduled Task")
+    private var taskDesc by mutableStateOf("")
+    private var scheduledTime by mutableLongStateOf(0L)
+    private var offsetMins by mutableIntStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Extract extras
-        taskId = intent.getLongExtra(AlarmScheduler.EXTRA_TASK_ID, -1L)
-        taskTitle = intent.getStringExtra(AlarmScheduler.EXTRA_TASK_TITLE) ?: "Upcoming Task"
-        taskDesc = intent.getStringExtra(AlarmScheduler.EXTRA_TASK_DESC) ?: ""
-        scheduledTime = intent.getLongExtra(AlarmScheduler.EXTRA_TASK_SCHEDULED_TIME, System.currentTimeMillis())
-        offsetMins = intent.getIntExtra(AlarmScheduler.EXTRA_TASK_OFFSET_MINS, 0)
+        readTaskExtras(intent)
 
         // Wake screen and show over lockscreen
         turnScreenOnAndDismissKeyguard()
@@ -110,6 +114,38 @@ class ReminderPopupActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        readTaskExtras(intent)
+    }
+
+    private fun readTaskExtras(intent: Intent) {
+        taskId = intent.getLongExtra(AlarmScheduler.EXTRA_TASK_ID, -1L)
+        taskTitle = intent.getStringExtra(AlarmScheduler.EXTRA_TASK_TITLE) ?: "Upcoming Task"
+        taskDesc = intent.getStringExtra(AlarmScheduler.EXTRA_TASK_DESC) ?: ""
+        scheduledTime = intent.getLongExtra(AlarmScheduler.EXTRA_TASK_SCHEDULED_TIME, System.currentTimeMillis())
+        offsetMins = intent.getIntExtra(AlarmScheduler.EXTRA_TASK_OFFSET_MINS, 0)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The popup is on top of everything now; the heads-up notification would only cover it
+        if (taskId != -1L) cancelAlarmNotification(applicationContext, taskId)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Left while still ringing (Home, app switch, screen off): restore the notification so
+        // Dismiss/Snooze stay reachable. No full-screen intent, or it would relaunch this popup.
+        if (!isFinishing && !isChangingConfigurations && taskId != -1L) {
+            showAlarmNotification(
+                applicationContext, taskId, taskTitle, taskDesc, scheduledTime, offsetMins,
+                fullScreen = false
+            )
         }
     }
 
@@ -144,7 +180,7 @@ class ReminderPopupActivity : ComponentActivity() {
     private fun handleSnooze(minutes: Int) {
         ReminderSoundPlayer.stop()
         if (taskId != -1L) {
-            AlarmScheduler.snoozeTaskAlarm(
+            val snoozedUntil = AlarmScheduler.snoozeTaskAlarm(
                 applicationContext,
                 taskId,
                 taskTitle,
@@ -152,18 +188,17 @@ class ReminderPopupActivity : ComponentActivity() {
                 scheduledTime,
                 snoozeMinutes = minutes
             )
+            lifecycleScope.launch(Dispatchers.IO) {
+                val db = TaskDatabase.getDatabase(applicationContext)
+                db.taskDao().setTaskSnoozed(taskId, snoozedUntil)
+            }
         }
         finish()
     }
 
+    /** Silences the alarm only; the task stays pending and shows as due until marked done. */
     private fun handleDismiss() {
         ReminderSoundPlayer.stop()
-        if (taskId != -1L) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val db = TaskDatabase.getDatabase(applicationContext)
-                db.taskDao().setTaskDismissed(taskId)
-            }
-        }
         finish()
     }
 
@@ -249,7 +284,7 @@ fun ReminderPopupScreen(
 
             if (offsetMins > 0) {
                 Text(
-                    text = "Alerted $offsetMins mins in advance",
+                    text = "Alerted ${formatReminderOffset(offsetMins)} in advance",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.padding(top = 4.dp)

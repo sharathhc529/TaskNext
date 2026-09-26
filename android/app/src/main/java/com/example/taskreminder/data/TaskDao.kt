@@ -29,18 +29,15 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY scheduledTimestamp ASC")
     fun getAllTasks(): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND isDismissed = 0 AND scheduledTimestamp >= :currentTime ORDER BY scheduledTimestamp ASC")
+    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND scheduledTimestamp >= :currentTime ORDER BY scheduledTimestamp ASC")
     fun getActiveUpcomingTasks(currentTime: Long): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND isDismissed = 0 ORDER BY scheduledTimestamp ASC LIMIT 1")
-    fun getNextUpcomingTaskFlow(): Flow<TaskEntity?>
-
-    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND isDismissed = 0 AND (scheduledTimestamp - (reminderOffsetMinutes * 60000)) > :currentTime")
+    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND COALESCE(snoozedUntil, scheduledTimestamp - (reminderOffsetMinutes * 60000)) > :currentTime")
     suspend fun getPendingTasksForReschedule(currentTime: Long): List<TaskEntity>
 
     @Query("UPDATE tasks SET isCompleted = :completed WHERE id = :taskId")
     suspend fun setTaskCompleted(taskId: Long, completed: Boolean)
 
-    @Query("UPDATE tasks SET isDismissed = 1 WHERE id = :taskId")
-    suspend fun setTaskDismissed(taskId: Long)
+    @Query("UPDATE tasks SET snoozedUntil = :snoozedUntil WHERE id = :taskId")
+    suspend fun setTaskSnoozed(taskId: Long, snoozedUntil: Long)
 }

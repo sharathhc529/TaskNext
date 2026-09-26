@@ -37,7 +37,7 @@ object AlarmScheduler {
             putExtra(EXTRA_TASK_TITLE, task.title)
             putExtra(EXTRA_TASK_DESC, task.description)
             putExtra(EXTRA_TASK_SCHEDULED_TIME, task.scheduledTimestamp)
-            putExtra(EXTRA_TASK_OFFSET_MINS, task.reminderOffsetMinutes)
+            putExtra(EXTRA_TASK_OFFSET_MINS, if (task.snoozedUntil != null) 0 else task.reminderOffsetMinutes)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -97,7 +97,7 @@ object AlarmScheduler {
     }
 
     /**
-     * Snooze an alarm by specified minutes
+     * Snooze an alarm by specified minutes. Returns the new trigger time so callers can persist it.
      */
     fun snoozeTaskAlarm(
         context: Context,
@@ -106,9 +106,9 @@ object AlarmScheduler {
         taskDesc: String,
         originalScheduledTime: Long,
         snoozeMinutes: Int = 5
-    ) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+    ): Long {
         val snoozeTriggerTime = System.currentTimeMillis() + (snoozeMinutes * 60 * 1000L)
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return snoozeTriggerTime
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = AlarmReceiver.ACTION_TASK_REMINDER
@@ -136,5 +136,6 @@ object AlarmScheduler {
         } catch (e: SecurityException) {
             Log.e(TAG, "Failed to set snooze exact alarm: ${e.message}")
         }
+        return snoozeTriggerTime
     }
 }

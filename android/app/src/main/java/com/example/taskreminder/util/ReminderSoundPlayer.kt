@@ -19,33 +19,20 @@ object ReminderSoundPlayer {
     private var vibrator: Vibrator? = null
 
     @Synchronized
-    fun startAlarmSoundAndVibration(context: Context) {
+    fun startAlarmSoundAndVibration(context: Context, customSoundUri: String? = null) {
         try {
             stop() // ensure previous is cleared
 
-            // 1. Play Alarm Ringtone
-            var alertUri: Uri? = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            if (alertUri == null) {
-                alertUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            }
-            if (alertUri == null) {
-                alertUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            }
-
-            if (alertUri != null) {
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(context, alertUri)
-                    setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_ALARM)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                            .build()
-                    )
-                    isLooping = true
-                    prepare()
-                    start()
-                }
-            }
+            // 1. Play the task's chosen sound, falling back to system sounds if it can't be played
+            //    (file deleted/moved, access revoked, unsupported format)
+            val candidates = listOfNotNull(
+                customSoundUri?.let { Uri.parse(it) },
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            )
+            mediaPlayer = candidates.firstNotNullOfOrNull { uri -> createLoopingPlayer(context, uri) }
+            mediaPlayer?.start()
 
             // 2. Start Repeating Vibration
             val vibrationPattern = longArrayOf(0, 600, 300, 600, 300, 800)
@@ -74,6 +61,26 @@ object ReminderSoundPlayer {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error starting alarm sound/vibration: ${e.message}", e)
+        }
+    }
+
+    private fun createLoopingPlayer(context: Context, uri: Uri): MediaPlayer? {
+        val player = MediaPlayer()
+        return try {
+            player.setDataSource(context, uri)
+            player.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            player.isLooping = true
+            player.prepare()
+            player
+        } catch (e: Exception) {
+            Log.w(TAG, "Cannot play $uri, trying next sound: ${e.message}")
+            player.release()
+            null
         }
     }
 
